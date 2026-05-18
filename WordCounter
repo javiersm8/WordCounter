@@ -1,0 +1,245 @@
+<?php
+/*
+Template Name: WordCounter
+*/
+?>
+
+<!DOCTYPE html>
+<html lang="es" class="dark"> <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WORDCOUNTER</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Estilos personalizados para la aplicación */
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Transición suave de colores al cambiar de tema */
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        /* Estilos para el scrollbar */
+        textarea::-webkit-scrollbar { width: 8px; }
+        textarea::-webkit-scrollbar-track { background: #E5E7EB; }
+        textarea::-webkit-scrollbar-thumb { background: #9CA3AF; border-radius: 4px; }
+        .dark textarea::-webkit-scrollbar-track { background: #1F2937; }
+        .dark textarea::-webkit-scrollbar-thumb { background: #4B5563; }
+
+        /* --- ESTILOS PARA EL LOGO DEL SITIO --- */
+        .logo-sitio-contenedor {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 9999;
+        }
+        .logo-sitio-contenedor .custom-logo {
+            max-height: 60px;
+            width: auto;
+            opacity: 0.8;
+            transition: opacity 0.2s ease;
+        }
+        .logo-sitio-contenedor .custom-logo:hover {
+            opacity: 1;
+        }
+    </style>
+    <script>
+        // Configuración de Tailwind para modo oscuro basado en clase
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+</head>
+<body class="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex flex-col items-center p-4">
+
+  <div class="logo-sitio-contenedor">
+      <?php the_custom_logo(); ?>
+  </div>
+    <div class="fixed top-2 left-2 bg-black bg-opacity-20 text-white text-xs px-2 py-1 rounded-full z-50">
+        powered by studyhub
+    </div>
+
+    <div class="fixed top-4 right-4 z-50 flex items-center gap-4">
+        <select id="languageSelector" class="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none transition cursor-pointer">
+            <option value="es">🇪🇸 Español</option>
+            <option value="en">🇬🇧 English</option>
+            <option value="fr">🇫🇷 Français</option>
+            <option value="de">🇩🇪 Deutsch</option>
+            <option value="pt">🇵🇹 Português</option>
+            <option value="pl">🇵🇱 Polski</option>
+            <option value="ru">🇷🇺 Русский</option>
+            <option value="zh">🇨🇳 中文</option>
+        </select>
+        <button id="themeToggleButton" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-bold w-12 h-12 rounded-full transition flex items-center justify-center shadow-md">
+            </button>
+    </div>
+
+    <div class="w-full max-w-4xl mx-auto flex flex-col flex-grow">
+        <header class="text-center my-8">
+            <h1 class="text-3xl sm:text-5xl font-bold mb-2" data-translate="mainTitle">Contador de Palabras, Líneas y Párrafos</h1>
+            <p class="text-base sm:text-lg text-gray-600 dark:text-gray-400" data-translate="subtitle">Pega tu texto a continuación para analizarlo en tiempo real.</p>
+        </header>
+
+        <main class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg flex flex-col flex-grow">
+            <div class="relative flex-grow">
+                <textarea id="textInput" class="w-full h-full min-h-[300px] p-4 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition resize-none" data-translate-placeholder="placeholderText"></textarea>
+            </div>
+
+            <div class="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+                <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
+                    <h2 class="text-lg font-semibold text-gray-600 dark:text-gray-400" data-translate="wordsLabel">Palabras</h2>
+                    <p id="wordCount" class="text-3xl font-bold text-blue-600 dark:text-blue-400">0</p>
+                </div>
+                <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
+                    <h2 class="text-lg font-semibold text-gray-600 dark:text-gray-400" data-translate="linesLabel">Líneas</h2>
+                    <p id="lineCount" class="text-3xl font-bold text-blue-600 dark:text-blue-400">0</p>
+                </div>
+                <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
+                    <h2 class="text-lg font-semibold text-gray-600 dark:text-gray-400" data-translate="paragraphsLabel">Párrafos</h2>
+                    <p id="paragraphCount" class="text-3xl font-bold text-blue-600 dark:text-blue-400">0</p>
+                </div>
+            </div>
+
+            <div class="mt-4 bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg border border-gray-200 dark:border-gray-600 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <label for="divisorInput" class="text-md font-medium text-gray-700 dark:text-gray-300" data-translate="divideByLabel">Dividir palabras entre:</label>
+                    <input type="number" id="divisorInput" min="0.1" step="0.1" value="1" class="w-24 p-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none text-center font-bold">
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-md font-medium text-gray-700 dark:text-gray-300" data-translate="dividedResultLabel">Resultado:</span>
+                    <div class="flex items-baseline gap-1">
+                        <span id="dividedResult" class="text-2xl font-bold text-green-600 dark:text-green-400">0</span>
+                        <span class="text-sm text-gray-500 dark:text-gray-400 font-medium" data-translate="wordsUnitLabel">palabras</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 text-center">
+                <button id="clearButton" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition shadow-md hover:shadow-lg" data-translate="clearButtonText">
+                    Limpiar Texto
+                </button>
+            </div>
+        </main>
+
+    </div>
+
+    <script>
+        // --- SELECCIÓN DE ELEMENTOS DEL DOM ---
+        const themeToggleButton = document.getElementById('themeToggleButton');
+        const languageSelector = document.getElementById('languageSelector');
+        const textInput = document.getElementById('textInput');
+        const wordCountEl = document.getElementById('wordCount');
+        const lineCountEl = document.getElementById('lineCount');
+        const paragraphCountEl = document.getElementById('paragraphCount');
+        const clearButton = document.getElementById('clearButton');
+        
+        // Elementos para el divisor
+        const divisorInput = document.getElementById('divisorInput');
+        const dividedResultEl = document.getElementById('dividedResult');
+
+        // --- DICCIONARIO DE TRADUCCIONES ---
+        const translations = {
+            es: { mainTitle: "Contador de Palabras, Líneas y Párrafos", subtitle: "Pega tu texto a continuación para analizarlo en tiempo real.", wordsLabel: "Palabras", linesLabel: "Líneas", paragraphsLabel: "Párrafos", clearButtonText: "Limpiar Texto", placeholderText: "Escribe o pega tu texto aquí...", divideByLabel: "Dividir palabras entre:", dividedResultLabel: "Resultado:", wordsUnitLabel: "palabras" },
+            en: { mainTitle: "Word, Line, and Paragraph Counter", subtitle: "Paste your text below to analyze it in real time.", wordsLabel: "Words", linesLabel: "Lines", paragraphsLabel: "Paragraphs", clearButtonText: "Clear Text", placeholderText: "Type or paste your text here...", divideByLabel: "Divide words by:", dividedResultLabel: "Result:", wordsUnitLabel: "words" },
+            pt: { mainTitle: "Contador de Palavras, Linhas e Parágrafos", subtitle: "Cole seu texto abaixo para analisá-lo em tempo real.", wordsLabel: "Palavras", linesLabel: "Linhas", paragraphsLabel: "Parágrafos", clearButtonText: "Limpar Texto", placeholderText: "Digite ou cole seu texto aqui...", divideByLabel: "Dividir palavras por:", dividedResultLabel: "Resultado:", wordsUnitLabel: "palavras" },
+            de: { mainTitle: "Wort-, Zeilen- und Absatzzähler", subtitle: "Fügen Sie Ihren Text unten ein, um ihn in Echtzeit zu analysieren.", wordsLabel: "Wörter", linesLabel: "Zeilen", paragraphsLabel: "Absätze", clearButtonText: "Text löschen", placeholderText: "Geben oder fügen Sie Ihren Text hier ein...", divideByLabel: "Wörter teilen durch:", dividedResultLabel: "Ergebnis:", wordsUnitLabel: "wörter" },
+            fr: { mainTitle: "Compteur de Mots, Lignes et Paragraphes", subtitle: "Collez votre texte ci-dessous pour l'analyser en temps réel.", wordsLabel: "Mots", linesLabel: "Lignes", paragraphsLabel: "Paragraphes", clearButtonText: "Effacer le Texte", placeholderText: "Saisissez ou collez votre texte ici...", divideByLabel: "Diviser les mots par:", dividedResultLabel: "Résultat:", wordsUnitLabel: "mots" },
+            ru: { mainTitle: "Счетчик слов, строк и абзацев", subtitle: "Вставьте ваш текст ниже для анализа в реальном времени.", wordsLabel: "Слова", linesLabel: "Строки", paragraphsLabel: "Абзацы", clearButtonText: "Очистить текст", placeholderText: "Введите или вставьте ваш текст здесь...", divideByLabel: "Разделить слова на:", dividedResultLabel: "Результат:", wordsUnitLabel: "слов" },
+            zh: { mainTitle: "单词、行和段落计数器", subtitle: "在下方粘贴您的文本以进行实时分析。", wordsLabel: "单词", linesLabel: "行数", paragraphsLabel: "段落", clearButtonText: "清除文本", placeholderText: "在此处输入或粘贴您的文本...", divideByLabel: "单词数除以:", dividedResultLabel: "结果:", wordsUnitLabel: "字" },
+            pl: { mainTitle: "Licznik słów, wierszy i akapitów", subtitle: "Wklej tekst poniżej, aby przeanalizować go w czasie rzeczywistym.", wordsLabel: "Słowa", linesLabel: "Wiersze", paragraphsLabel: "Akapity", clearButtonText: "Wyczyść tekst", placeholderText: "Wpisz lub wklej tutaj swój tekst...", divideByLabel: "Podziel słowa przez:", dividedResultLabel: "Wynik:", wordsUnitLabel: "słów" },
+        };
+
+        // --- MANEJO DEL TEMA (MODO CLARO/OSCURO) ---
+        const sunIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>`;
+        const moonIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>`;
+
+        function applyTheme(theme) {
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+                themeToggleButton.innerHTML = sunIcon;
+                localStorage.setItem('theme', 'dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+                themeToggleButton.innerHTML = moonIcon;
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        themeToggleButton.addEventListener('click', () => {
+            const currentTheme = localStorage.getItem('theme') || 'dark';
+            applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+        });
+
+        // --- LÓGICA DE TRADUCCIÓN ---
+        function changeLanguage(lang) {
+            const t = translations[lang];
+            if (!t) return;
+
+            document.querySelectorAll('[data-translate]').forEach(el => {
+                const key = el.dataset.translate;
+                if (t[key]) el.textContent = t[key];
+            });
+
+            document.querySelectorAll('[data-translate-placeholder]').forEach(el => {
+                const key = el.dataset.translatePlaceholder;
+                if (t[key]) el.placeholder = t[key];
+            });
+            localStorage.setItem('language', lang);
+        }
+
+        languageSelector.addEventListener('change', (e) => changeLanguage(e.target.value));
+
+        // --- LÓGICA DEL CONTADOR ---
+        function updateCounts() {
+            const text = textInput.value;
+
+            // 1. Conteo de Palabras
+            const words = text.trim().split(/\s+/).filter(word => word !== '');
+            const totalWords = words.length === 1 && words[0] === '' ? 0 : words.length;
+            wordCountEl.textContent = totalWords;
+
+            // 2. Conteo de Líneas
+            const lines = text.split('\n');
+            lineCountEl.textContent = text.length === 0 ? 0 : lines.length;
+
+            // 3. Conteo de Párrafos
+            const paragraphs = text.trim().split(/\n+/).filter(p => p.trim() !== '');
+            paragraphCountEl.textContent = paragraphs.length === 1 && paragraphs[0] === '' ? 0 : paragraphs.length;
+            
+            // 4. Lógica de División
+            const divisor = parseFloat(divisorInput.value); 
+            if (divisor > 0) {
+                const divisionResult = totalWords / divisor;
+                // Usamos Math.round() para devolver un número entero sin decimales
+                dividedResultEl.textContent = Math.round(divisionResult);
+            } else {
+                dividedResultEl.textContent = "0";
+            }
+        }
+
+        // --- MANEJADORES DE EVENTOS ---
+        textInput.addEventListener('input', updateCounts);
+        divisorInput.addEventListener('input', updateCounts);
+
+        clearButton.addEventListener('click', () => {
+            textInput.value = '';
+            divisorInput.value = '1'; 
+            updateCounts(); 
+        });
+
+        // --- INICIALIZACIÓN ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const preferredTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            applyTheme(preferredTheme);
+
+            const preferredLanguage = localStorage.getItem('language') || 'es';
+            languageSelector.value = preferredLanguage;
+            changeLanguage(preferredLanguage);
+
+            updateCounts(); 
+        });
+
+    </script>
+</body>
+</html>
